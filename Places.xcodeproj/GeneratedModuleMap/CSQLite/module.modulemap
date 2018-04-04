@@ -1,4 +1,0 @@
-module CSQLite {
-    umbrella "/Users/slavasemeniuk/API/Vapor/Places/.build/checkouts/fluent.git-6251908308727715749/Sources/CSQLite/include"
-    export *
-}
