@@ -1,5 +1,6 @@
 import FluentMySQL
 import Vapor
+import Authentication
 
 /// Called before your application initializes.
 ///
@@ -12,11 +13,16 @@ public func configure(
 ) throws {
     
     try services.register(FluentMySQLProvider())
+    try services.register(AuthenticationProvider())
 
     // Register routes to the router
     let router = EngineRouter.default()
     try routes(router)
     services.register(router, as: Router.self)
+    
+    var middlewares = MiddlewareConfig()
+    middlewares.use(ErrorMiddleware.self)
+    services.register(middlewares)
     
     let mysqlConfig = MySQLDatabaseConfig(hostname: "localhost", port: 3306, username: "root", password: "qwerty", database: "develop")
     services.register(mysqlConfig)

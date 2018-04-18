@@ -7,6 +7,7 @@
 
 import Vapor
 import Authentication
+import Random
 import FluentMySQL
 
 final class UserToken: Token {
@@ -29,8 +30,8 @@ final class UserToken: Token {
     var token: String
     var userID: UUID
     
-    init(token: String, userID: UUID) {
-        self.token = token
-        self.userID = userID
+    init(_ user: User) throws {
+        self.token = OSRandom().generateData(count: 16).base64EncodedString()
+        self.userID = try user.requireID()
     }
 }
