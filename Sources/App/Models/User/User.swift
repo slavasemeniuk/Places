@@ -20,6 +20,9 @@ final class User: MySQLUUIDModel {
     }
 }
 
+// MARK: - Parameter
+extension User: Parameter {}
+
 // MARK: - TokenAuthenticatable
 extension User: TokenAuthenticatable {
     typealias TokenType = UserToken

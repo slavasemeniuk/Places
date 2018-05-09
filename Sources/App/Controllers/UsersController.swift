@@ -8,6 +8,7 @@
 import Vapor
 import Crypto
 import Authentication
+import Fluent
 
 final class UsersController: RouteCollection {
     func boot(router: Router) throws {
@@ -17,21 +18,26 @@ final class UsersController: RouteCollection {
         let currentUserRouter = usersRouter.grouped("me")
         let basicAuthGroup = currentUserRouter.grouped(User.basicAuthMiddleware(using: BCryptDigest()))
         basicAuthGroup.get(use: loginHandler)
-
+        
+        let tokenGroup = usersRouter.grouped(User.tokenAuthMiddleware())
+        tokenGroup.get(User.parameter, use: getAtIndex)
     }
     
     func createHandler(_ req: Request) throws -> Future<User.Public> {
         return try req.content
             .decode(User.self)
+            .flatMap { usr in
+                try usr.throwIfExist(with: \User.email, on: req)
+            }
             .flatMap(to: User.self) { user in
-                user.password = try String.convertFromData(BCrypt.hash(user.password, cost: 1))
+                user.password = try BCrypt.hash(user.password, cost: 4)
                 return user.save(on: req)
             }
             .flatMap(to: (User, UserToken).self) { user in
                 let token = try UserToken(user)
                 return req.eventLoop.newSucceededFuture(result: user).and(token.save(on: req))
-            }.map(to: User.Public.self) {
-                return try User.Public(user: $0, token: $1)
+            }.map { res in
+                return try User.Public(user: res.0, token: res.1)
         }
     }
     
@@ -44,8 +50,11 @@ final class UsersController: RouteCollection {
         }
     }
     
-    func getAllHandler(_ req: Request) throws -> Future<[User]> {
-        
-        return User.query(on: req).all()
+    func getAtIndex(_ req: Request) throws -> Future<User.Public> {
+        return try req.parameters
+            .next(User.self)
+            .map(to: User.Public.self) {
+                try User.Public(user: $0)
+        }
     }
 }
