@@ -43,7 +43,10 @@ final class UsersController: RouteCollection {
     
     func loginHandler(_ req: Request) throws -> Future<User.Public> {
         let user = try req.requireAuthenticated(User.self)
-        return try UserToken(user)
+        try req.unauthenticate(User.self)
+        return try user.authTokens.query(on: req)
+            .delete()
+            .map(to: UserToken.self) { try UserToken(user) }
             .save(on: req)
             .map(to: User.Public.self) {
                 try User.Public(user: user, token: $0)
