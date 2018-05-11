@@ -24,7 +24,10 @@ public func configure(
     middlewares.use(ErrorMiddleware.self)
     services.register(middlewares)
     
-    let mysqlConfig = MySQLDatabaseConfig(hostname: "localhost", port: 3306, username: "root", password: "qwertyui", database: "develop")
+    let mysqlConfig = MySQLDatabaseConfig(hostname: "localhost", port: 3306,
+                                          username: Environment.get("DB_USERNAME")!,
+                                          password: Environment.get("DB_PASSWORD")!,
+                                          database: Environment.get("DATABASE_NAME")!)
     services.register(mysqlConfig)
     
     var migrations = MigrationConfig()
