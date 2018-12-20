@@ -26,9 +26,9 @@ final class UsersController: RouteCollection {
     func createHandler(_ req: Request) throws -> Future<User.Public> {
         return try req.content
             .decode(User.self)
-            .flatMap { usr in
-                try usr.throwIfExist(with: \User.email, on: req)
-            }
+//            .flatMap { usr in
+//                try usr.throwIfExist(with: \User.email, on: req)
+//            }
             .flatMap(to: User.self) { user in
                 user.password = try BCrypt.hash(user.password, cost: 4)
                 return user.save(on: req)

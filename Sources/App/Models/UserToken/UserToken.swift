@@ -10,12 +10,30 @@ import Authentication
 import Random
 import FluentMySQL
 
-final class UserToken: Token {
+final class UserToken: MySQLModel {
     
     typealias Database = MySQLDatabase
-    typealias UserType = User
     typealias ID = Int
+
+    var id: Int?
+    var token: String
+    var userID: UUID
     
+    init(_ user: User) throws {
+        self.token = OSRandom().generateData(count: 16).base64EncodedString()
+        self.userID = try user.requireID()
+    }
+}
+
+extension UserToken {
+    var user: Parent<UserToken, User> {
+        return parent(\.userID)
+    }
+}
+
+extension UserToken: Token {
+    typealias UserType = User
+
     static var idKey: WritableKeyPath<UserToken, Int?> {
         return \.id
     }
@@ -24,14 +42,5 @@ final class UserToken: Token {
     }
     static var userIDKey: WritableKeyPath<UserToken, UUID> {
         return \.userID
-    }
-    
-    var id: Int?
-    var token: String
-    var userID: UUID
-    
-    init(_ user: User) throws {
-        self.token = OSRandom().generateData(count: 16).base64EncodedString()
-        self.userID = try user.requireID()
     }
 }

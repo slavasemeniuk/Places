@@ -20,7 +20,7 @@ final class City: MySQLUUIDModel {
     
 }
 
-extension Place {
+extension City {
     public var places: Children<City, Place> {
         return children(\Place.cityID)
     }
