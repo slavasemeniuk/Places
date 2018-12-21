@@ -8,15 +8,14 @@
 import FluentMySQL
 
 extension User: Migration {
-//    static func prepare(on connection: MySQLConnection) -> Future<Void> {
-//        return Database.create(self, on: connection) { builder in
-//            try builder.field(for: \.id)
-//            try builder.field(for: \.firsName)
-//            try builder.field(for: \.lastName)
-//        }
-//    }
-//
-//    static func revert(on connection: MySQLConnection) -> Future<Void> {
-//        return Database.delete(self, on: connection)
-//    }
+    static func prepare(on connection: MySQLConnection) -> Future<Void> {
+        return Database.create(self, on: connection) { builder in
+            try addProperties(to: builder)
+            builder.unique(on: \.email)
+        }
+    }
+
+    static func revert(on connection: MySQLConnection) -> Future<Void> {
+        return Database.delete(self, on: connection)
+    }
 }
